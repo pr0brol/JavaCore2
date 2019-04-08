@@ -38,22 +38,7 @@ public class Main {
         }
         System.out.println();
 
-        new Book();
-        Book.add("Petrov", "3-15-10");
-        Book.add("Ivanov", "3-15-11");
-        Book.add("Sidorov", "3-15-12");
-        Book.add("Pushkov", "3-15-13");
-        Book.add("Petrov", "3-15-14");
-        Book.add("Ivanov", "3-15-15");
-        Book.add("Pavlov", "3-15-16");
-        Book.add("Vetrov", "3-15-17");
-        Book.add("Duhov", "3-15-18");
-        Book.add("Tupicin", "3-15-19");
 
-        Book.get("Petrov");
-        Book.get("Pavlov");
-        Book.get("Ivanov");
-        Book.get("Duhov");
     }
 }
 
