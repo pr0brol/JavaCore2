@@ -1,11 +1,13 @@
 package Java.ru.geekbrains.lesson3;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class MainClass {
     public static void main(String[] args) {
         ArrayList<String> wordsList = new ArrayList();
-        ArrayList<String> wordOneList = new ArrayList();
+        HashMap<String, Integer> words = new HashMap<>();
+
         wordsList.add("Стол");
         wordsList.add("Стул");
         wordsList.add("Табурет");
@@ -17,21 +19,23 @@ public class MainClass {
         wordsList.add("Стол");
         wordsList.add("Окно");
         wordsList.add("Табурет");
-        wordsList.add("Стул");
         wordsList.add("Комод");
         wordsList.add("Шкаф");
         wordsList.add("Кресло");
         System.out.println("исходный массив слов: " + wordsList);
+
         for(String word : wordsList){
-            if(wordOneList.contains(word)){
-                continue;
+            int tempCount = 0;
+            for(String wordIn : wordsList){
+                if(word == wordIn){ tempCount++;}
             }
-            else {
-                wordOneList.add(word);
-            }
+            words.put(word, tempCount);
         }
-        System.out.println("массив уникальных слов: " + wordOneList);
-        System.out.println("количество уникальных слов: " + wordOneList.size());
+        System.out.println("массив уникальных слов: " + words.keySet());
+        System.out.println("количество уникальных слов: " + words.size());
+        for(String word : words.keySet()){
+            System.out.printf("Слово %s повторяется %d раз %n", word, words.get(word));
+        }
         System.out.println();
 
         new PhoneBook();
