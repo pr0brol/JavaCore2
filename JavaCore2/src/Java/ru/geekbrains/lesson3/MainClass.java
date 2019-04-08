@@ -48,7 +48,7 @@ public class MainClass {
         PhoneBook.add("Pavlov", "3-15-16");
         PhoneBook.add("Vetrov", "3-15-17");
         PhoneBook.add("Duhov", "3-15-18");
-        PhoneBook.add("Petrov", "3-15-19");
+        PhoneBook.add("Tupicin", "3-15-19");
 
         PhoneBook.get("Petrov");
         PhoneBook.get("Pavlov");
