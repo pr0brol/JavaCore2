@@ -20,12 +20,7 @@ public class BookNumber {
     }
 
     public static void get(String name){
-        for(String phone : phoneBook.keySet()){
-            if(phone == name){
-                System.out.printf("Абонент %s найден с номером(-ами) " + phoneBook.get(name), name);
-                System.out.println();
-                continue;
-            }
-        }
+        System.out.printf("Абонент %s найден с номером(-ами) " + phoneBook.get(name), name);
+        System.out.println();
     }
 }
