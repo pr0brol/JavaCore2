@@ -25,9 +25,11 @@ public class WorkMainClass {
         System.out.println("исходный массив слов: " + wordsList);
 
         for(String word : wordsList){
-            words.putIfAbsent(word, 0);
-            int tempCount = words.get(word);
-            words.put(word, tempCount+1);
+            int tempCount = 0;
+            for(String wordIn : wordsList){
+                if(word == wordIn){ tempCount++;}
+            }
+            words.put(word, tempCount);
         }
         System.out.println("массив уникальных слов: " + words.keySet());
         System.out.println("количество уникальных слов: " + words.size());
