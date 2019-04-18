@@ -17,7 +17,7 @@ public class EchoServer {
             DataInputStream in = new DataInputStream(socket.getInputStream());
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
             System.out.println("Кто-то подключился: " + socket.getInetAddress());
-
+            System.out.print("Введите ответ клиенту > ");
             Thread InThread = new Thread() {
                 @Override
                 public void run() {
@@ -37,7 +37,7 @@ public class EchoServer {
                 public void run() {
                     try {
                         while (scanner.hasNextLine()) {
-                            System.out.println("Введите ответ клиенту > ");
+                            System.out.print("Введите ответ клиенту > ");
                             String line = scanner.nextLine();
                             out.writeUTF(line);
                         }
@@ -48,10 +48,14 @@ public class EchoServer {
             };
 
             InThread.start();
+
             OutThread.start();
+            OutThread.join();
 
         }catch (IOException ex){
             ex.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 }
