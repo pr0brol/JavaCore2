@@ -3,20 +3,17 @@ package Java.ru.geekbrains.lesson6;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
 
-public class EchoServer {
+public class EchoClient {
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
+
         try(Scanner scanner = new Scanner(System.in);
-            ServerSocket serverSocket = new ServerSocket(7777)){
-            System.out.println("Сервер ожидает подключения!");
-            Socket socket = serverSocket.accept();
+            Socket socket = new Socket("LocalHost", 7777)){
             DataInputStream in = new DataInputStream(socket.getInputStream());
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-            System.out.println("Кто-то подключился: " + socket.getInetAddress());
 
             Thread InThread = new Thread() {
                 @Override
@@ -24,7 +21,7 @@ public class EchoServer {
                     try{
                         while (true){
                             String str = in.readUTF();
-                            System.out.println("Новое сообщение > " + str);
+                            System.out.println("Ответ сервера > " + str);
                         }
                     }catch (IOException ex){
                         ex.printStackTrace();
@@ -37,7 +34,7 @@ public class EchoServer {
                 public void run() {
                     try {
                         while (scanner.hasNextLine()) {
-                            System.out.println("Введите ответ клиенту > ");
+                            System.out.println("Введите сообщение > ");
                             String line = scanner.nextLine();
                             out.writeUTF(line);
                         }
