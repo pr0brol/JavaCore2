@@ -5,6 +5,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import static Java.ru.geekbrains.lesson4.TextMessage.userTo;
+
 public class MyWindow extends JFrame {
 
     private final JButton buttonSend;
@@ -17,12 +19,14 @@ public class MyWindow extends JFrame {
 
     private final JList<TextMessage> listText;
 
-    private final JTextField textField;
+    private final JTextField messageField;
+
+    private final JTextField usersField;
 
     private final Network network;
 
     public MyWindow(){
-        setTitle("Online Chat");
+        setTitle("Онлайн чат");
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setBounds(300, 400, 350, 400);
         setMinimumSize(new Dimension(350, 400));
@@ -38,10 +42,13 @@ public class MyWindow extends JFrame {
         messageCellRenderer = new TextMessageCellRenderer();
         listText.setCellRenderer(messageCellRenderer);
 
-        textField = new JTextField(20);
-        textField.setMinimumSize(new Dimension(150, 30));
+        messageField = new JTextField(14);
+        usersField = new JTextField(4);
+        messageField.setMinimumSize(new Dimension(100, 30));
+        usersField.setMinimumSize(new Dimension(50, 30));
         container.setLayout(new FlowLayout());
-        container.add(textField);
+        container.add(usersField);
+        container.add(messageField);
         container.add(buttonSend);
         add(container, BorderLayout.SOUTH);
 
@@ -50,11 +57,11 @@ public class MyWindow extends JFrame {
         buttonSend.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String text = textField.getText();
+                String text = messageField.getText();
                 if(text != null && !text.trim().isEmpty()){
-                    TextMessage msg = new TextMessage(network.getLogin(), TextMessage.userTo, text);
+                    TextMessage msg = new TextMessage(network.getLogin(), userTo, text);
                     listModel.add(listModel.size(), msg);
-                    textField.setText(null);
+                    messageField.setText(null);
                     network.sendTextMessage(msg);
                 }
             }
@@ -63,16 +70,16 @@ public class MyWindow extends JFrame {
         Action action = new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String text = textField.getText();
+                String text = messageField.getText();
                 if(text != null && !text.trim().isEmpty()){
-                    TextMessage msg = new TextMessage(network.getLogin(), "ivan", text);
+                    TextMessage msg = new TextMessage(network.getLogin(), userTo, text);
                     listModel.add(listModel.size(), msg);
-                    textField.setText(null);
+                    messageField.setText(null);
                     network.sendTextMessage(msg);
                 }
             }
         };
-        textField.addActionListener(action);
+        messageField.addActionListener(action);
 
         this.network = new Network("localhost", 7777, this::submitMessage);
         LoginDialog loginDialog = new LoginDialog(this, network);

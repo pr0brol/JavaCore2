@@ -5,8 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-import static Java.ru.geekbrains.lesson4.MessagePatterns.AUTH_PATTERN;
-import static Java.ru.geekbrains.lesson4.MessagePatterns.MESSAGE_SEND_PATTERN;
+import static Java.ru.geekbrains.lesson4.MessagePatterns.*;
 
 public class Network {
     public Socket socket;
@@ -32,7 +31,7 @@ public class Network {
                 while (true){
                     try{
                         String text = inSteam.readUTF();
-                        String[] textMass = text.split(" ");
+                        String[] textMass = text.split(" ", 3);
                         if(textMass.length != 3 || textMass[0].equals("/w")){
                             continue;
                         }
@@ -56,7 +55,7 @@ public class Network {
 
         sendMessage(String.format(AUTH_PATTERN, login, password));
         String response = inSteam.readUTF();
-        if(response.equals("/auth successful")){
+        if(response.equals(AUTH_SUCCESSFUL)){
             this.login = login;
             receiverThread.start();
         }else{

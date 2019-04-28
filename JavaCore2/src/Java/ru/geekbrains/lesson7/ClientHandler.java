@@ -1,5 +1,7 @@
 package Java.ru.geekbrains.lesson7;
 
+import Java.ru.geekbrains.lesson4.TextMessage;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -28,14 +30,15 @@ public class ClientHandler {
             public void run() {
                 while (!Thread.currentThread().isInterrupted()){
                     try {
-                        String msg = inStream.readUTF();
-                        System.out.printf("Сообщение от пользователя %s: %s%n", login, msg);
-                        //todo проверить является ли msg сообщением для пользователся
-                        //todo если да, то отправить его
-                        String userTo = "";
-                        String message = "";
-                        sendMessage(userTo, message);
-                        chatServer.sendMessage(userTo, login, message);
+                        String text = inStream.readUTF();
+                        System.out.printf("Сообщение от пользователя %s: %s%n", login, text);
+                        System.out.println("Новое сообщение " + text);
+                        String[] textMass = text.split(" ", 3);
+                        if(textMass.length == 3){
+                            TextMessage msg = new TextMessage(textMass[1], login, textMass[2]);
+                            chatServer.sendMessage(msg);
+                        }
+
                     }catch (IOException ex){
                         ex.printStackTrace();
                         break;
@@ -51,7 +54,8 @@ public class ClientHandler {
         return login;
     }
 
-    public void sendMessage(String userTo, String msg) throws IOException{
-        outStream.writeUTF(String.format(MESSAGE_SEND_PATTERN, userTo, msg));
+    public void sendMessage(String userFrom, String msg) throws IOException{
+        outStream.writeUTF(String.format(MESSAGE_SEND_PATTERN, userFrom, msg));
     }
 }
+

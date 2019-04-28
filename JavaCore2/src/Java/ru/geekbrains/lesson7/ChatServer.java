@@ -1,6 +1,8 @@
 package Java.ru.geekbrains.lesson7;
 
 import Java.ru.geekbrains.lesson4.AuthException;
+import Java.ru.geekbrains.lesson4.MessagePatterns;
+import Java.ru.geekbrains.lesson4.TextMessage;
 import Java.ru.geekbrains.lesson7.auth.AuthService;
 import Java.ru.geekbrains.lesson7.auth.AuthServiceImpl;
 
@@ -39,20 +41,20 @@ public class ChatServer {
                 }catch (IOException ex){
                     ex.printStackTrace();
                 }catch (AuthException ex){
-                    outStream.writeUTF("/auth fails");
+                    outStream.writeUTF(MessagePatterns.AUTH_FAIL);
                     outStream.flush();
                     socket.close();
                 }
                 if(user != null && authService.authUser(user)){
                     System.out.printf("Пользователь %s успешно авторизировался! %n", user.getLogin());
                     clientHandlerMap.put(user.getLogin(), new ClientHandler(user.getLogin(), socket, this));
-                    outStream.writeUTF("/auth successful");
+                    outStream.writeUTF(MessagePatterns.AUTH_SUCCESSFUL);
                     outStream.flush();
                 }else {
                     if(user != null){
                         System.out.printf("Неверная авторизация пользователя %s%n", user.getLogin());
                     }
-                    outStream.writeUTF("/auth fails");
+                    outStream.writeUTF(MessagePatterns.AUTH_FAIL);
                     outStream.flush();
                     socket.close();
                 }
@@ -70,9 +72,12 @@ public class ChatServer {
         return new User(authParts[1], authParts[2]);
     }
 
-    public void sendMessage(String userTo, String userFrom, String msg){
-        ClientHandler userToClientHandler = clientHandlerMap.get(userTo);
-        //todo убедиться что userToClientHandler сущесвует и отправить сообщение
-        //todo для отправки вызвать метод userToClientHandler.sendMessage()
+    public void sendMessage(TextMessage msg) throws IOException {
+        ClientHandler userToClientHandler = clientHandlerMap.get(msg.getUserTo());
+        if(userToClientHandler != null){
+            userToClientHandler.sendMessage(msg.getUserFrom(), msg.getText());
+        }else {
+            System.out.printf("Пользователь %s не в сети%n", msg.getUserTo());
+        }
     }
 }

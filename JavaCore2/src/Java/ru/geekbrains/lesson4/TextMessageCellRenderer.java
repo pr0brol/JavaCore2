@@ -41,7 +41,6 @@ public class TextMessageCellRenderer extends JPanel implements ListCellRenderer<
                                                   int index, boolean isSelected, boolean cellHasFocus) {
         created.setText(value.getCreated());
         setBackground(list.getBackground());
-        userName.setOpaque(true);
         userName.setText(value.getUserFrom());
         messageText.setText(value.getText());
         return this;
