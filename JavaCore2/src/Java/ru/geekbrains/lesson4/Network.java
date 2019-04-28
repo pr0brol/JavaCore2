@@ -32,11 +32,11 @@ public class Network {
                     try{
                         String text = inSteam.readUTF();
                         String[] textMass = text.split(" ", 3);
-                        if(textMass.length != 3 || textMass[0].equals("/w")){
-                            continue;
+                        if(textMass.length == 3 && textMass[0].equals("/w")){
+                            TextMessage textMessage = new TextMessage(textMass[1], login, textMass[2]);
+                            messageReciever.submitMessage(textMessage);
                         }
-                        TextMessage textMessage = new TextMessage(textMass[1], login, textMass[2]);
-                        messageReciever.submitMessage(textMessage);
+
                     }catch (IOException ex){
                         ex.printStackTrace();
                         if(socket.isClosed()){

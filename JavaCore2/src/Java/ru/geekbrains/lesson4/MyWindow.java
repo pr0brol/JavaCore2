@@ -58,6 +58,7 @@ public class MyWindow extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String text = messageField.getText();
+                String userTo = usersField.getText();
                 if(text != null && !text.trim().isEmpty()){
                     TextMessage msg = new TextMessage(network.getLogin(), userTo, text);
                     listModel.add(listModel.size(), msg);
@@ -71,6 +72,7 @@ public class MyWindow extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String text = messageField.getText();
+                String userTo = usersField.getText();
                 if(text != null && !text.trim().isEmpty()){
                     TextMessage msg = new TextMessage(network.getLogin(), userTo, text);
                     listModel.add(listModel.size(), msg);

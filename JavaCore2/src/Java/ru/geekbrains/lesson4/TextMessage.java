@@ -49,4 +49,10 @@ public class TextMessage {
     public String getCreated(){
         return created;
     }
+
+    public void changeUsers(){
+        String tempName = userFrom;
+        userFrom = userTo;
+        userTo = tempName;
+    }
 }

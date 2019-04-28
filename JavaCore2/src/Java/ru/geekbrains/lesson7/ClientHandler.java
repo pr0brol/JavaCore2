@@ -36,6 +36,7 @@ public class ClientHandler {
                         String[] textMass = text.split(" ", 3);
                         if(textMass.length == 3){
                             TextMessage msg = new TextMessage(textMass[1], login, textMass[2]);
+                            msg.changeUsers();
                             chatServer.sendMessage(msg);
                         }
 
