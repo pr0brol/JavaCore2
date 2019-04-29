@@ -14,25 +14,25 @@ public class TextMessageCellRenderer extends JPanel implements ListCellRenderer<
     private final JPanel panel;
 
     public TextMessageCellRenderer(){
+        super();
         setLayout(new BorderLayout());
+
         created = new JLabel();
         userName = new JLabel();
         messageText = new JTextArea();
-        panel = new JPanel();
+        panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-        Font un = userName.getFont();
-        userName.setFont(un.deriveFont(un.getStyle() | Font.BOLD | Font.ITALIC));
-
-        panel.setLayout(new FlowLayout());
         panel.add(userName);
         panel.add(created);
 
-        add(panel, BorderLayout.NORTH);
+        Font un = userName.getFont();
+        userName.setFont(un.deriveFont(un.getStyle() | Font.BOLD | Font.ITALIC));
 
         messageText.setLineWrap(true);
         messageText.setWrapStyleWord(true);
         messageText.setEditable(false);
 
+        add(panel, BorderLayout.NORTH);
         add(messageText, BorderLayout.SOUTH);
     }
 

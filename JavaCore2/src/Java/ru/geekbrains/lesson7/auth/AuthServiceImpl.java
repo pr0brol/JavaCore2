@@ -11,8 +11,8 @@ public class AuthServiceImpl implements AuthService {
 
     public AuthServiceImpl(){
         users.put("ivan", "123");
-        users.put("petr", "345");
-        users.put("julia", "789");
+        users.put("petr", "456");
+        users.put("jul", "789");
     }
     @Override
     public boolean authUser(User user){

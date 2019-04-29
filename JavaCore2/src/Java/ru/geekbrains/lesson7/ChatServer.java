@@ -6,6 +6,7 @@ import Java.ru.geekbrains.lesson4.TextMessage;
 import Java.ru.geekbrains.lesson7.auth.AuthService;
 import Java.ru.geekbrains.lesson7.auth.AuthServiceImpl;
 
+import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -15,7 +16,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ChatServer {
+public class ChatServer extends JDialog{
 
     private AuthService authService = new AuthServiceImpl();
     private Map<String, ClientHandler> clientHandlerMap = Collections.synchronizedMap(new HashMap<>());
@@ -32,7 +33,7 @@ public class ChatServer {
                 Socket socket = serverSocket.accept();
                 DataInputStream inStream = new DataInputStream(socket.getInputStream());
                 DataOutputStream outStream = new DataOutputStream(socket.getOutputStream());
-                System.out.println("Новый клиент присоединился!");
+                System.out.println("Новый пользователь присоединился!");
 
                 User user = null;
                 try {
@@ -47,7 +48,7 @@ public class ChatServer {
                 }
                 if(user != null && authService.authUser(user)){
                     System.out.printf("Пользователь %s успешно авторизировался! %n", user.getLogin());
-                    clientHandlerMap.put(user.getLogin(), new ClientHandler(user.getLogin(), socket, this));
+                    subscribe(user.getLogin(), socket);
                     outStream.writeUTF(MessagePatterns.AUTH_SUCCESSFUL);
                     outStream.flush();
                 }else {
@@ -72,6 +73,33 @@ public class ChatServer {
         return new User(authParts[1], authParts[2]);
     }
 
+    private void sendUserConnectedMessage(String login) throws IOException{
+        for(ClientHandler clientHandler: clientHandlerMap.values()){
+            if(!clientHandler.getLogin().equals(login)){
+                System.out.printf("Отправка уведомления от %s о %s%n", clientHandler.getLogin(), login);
+                clientHandler.sendConnectedMessage(login);
+            }
+        }
+    }
+
+    private void sendUserDisconnectedMessage(String login) throws IOException{
+        for(ClientHandler clientHandler: clientHandlerMap.values()){
+            if(!clientHandler.getLogin().equals(login)){
+                System.out.printf("Отправка уведомления от %s о %s%n", clientHandler.getLogin(), login);
+                clientHandler.sendDisconnectedMessage(login);
+            }
+        }
+    }
+
+    private void sendUserRequestMessage(String login) throws IOException{
+        for(ClientHandler clientHandler: clientHandlerMap.values()){
+            if(!clientHandler.getLogin().equals(login)){
+                System.out.println("Отправка уведомления о пользователях");
+                clientHandler.sendRequestMessage(login);
+            }
+        }
+    }
+
     public void sendMessage(TextMessage msg) throws IOException {
         ClientHandler userToClientHandler = clientHandlerMap.get(msg.getUserTo());
         if(userToClientHandler != null){
@@ -79,5 +107,42 @@ public class ChatServer {
         }else {
             System.out.printf("Пользователь %s не в сети%n", msg.getUserTo());
         }
+    }
+
+    public void subscribe(String login, Socket socket) throws IOException{
+        if(clientHandlerMap.containsKey(login)){
+            JOptionPane.showMessageDialog(this, "Повторный вход", "Ошибка", JOptionPane.ERROR_MESSAGE);
+            System.out.println("Повторная авторизация");
+            return;
+            //todo проверить подключён ли пользователь, если да. то отправить ошибку (добавить всплывающее окно)
+            //обработал, не придумал как при закрытии уведомления оставить всё как есть - сейчас вход всё равно выполняется
+        }else {
+            clientHandlerMap.put(login, new ClientHandler(login, socket, this));
+            sendUserConnectedMessage(login);
+            for(String key : clientHandlerMap.keySet()){
+                if(key == login){ continue;}
+                else{
+                    clientHandlerMap.get(key).sendMessage("Сервер", "Пользователь " + login + " в сети");
+                }
+            }
+        }
+    }
+
+    public void unsubscribe(String login) throws IOException {
+        clientHandlerMap.remove(login);
+        for(String key : clientHandlerMap.keySet()){
+            if(key == login){ continue;}
+            else{
+                clientHandlerMap.get(key).sendMessage("Сервер", "Пользователь " + login + " отключился");
+            }
+        }
+        sendUserDisconnectedMessage(login);
+    }
+
+    public void sendUsersMessage(String login) throws IOException{
+        for(String key : clientHandlerMap.keySet()){
+            clientHandlerMap.get(key).sendMessage("Сервер", key);
+        }
+        sendUserRequestMessage(login);
     }
 }
