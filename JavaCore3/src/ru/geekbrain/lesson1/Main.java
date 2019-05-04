@@ -30,10 +30,10 @@ public class Main {
         String apple = "apple";
         String orange = "orange";
 
-        Box appleBox1 = new Box("apple");
-        Box appleBox2 = new Box("apple");
+        Box appleBox1 = new Box(new Apple(), apple);
+        Box appleBox2 = new Box(new Apple(), apple);
 
-        Box orangeBox = new Box("orange");
+        Box orangeBox = new Box(new Orange(), orange);
 
         appleBox1.putFruit(orange, 3);
         appleBox1.putFruit(apple, 2);

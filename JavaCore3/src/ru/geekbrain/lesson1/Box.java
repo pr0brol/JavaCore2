@@ -5,14 +5,13 @@ import java.util.ArrayList;
 public class Box {
 
     String fruitType;
-    float weightFruit = 0;
-    float apple = 1.0f;
-    float orange = 1.5f;
     ArrayList inBox = new ArrayList();
+    float weightFruit;
 
-    public Box(String fruit){
-        if(fruit.equals("apple") || fruit.equals("orange")) {
-            this.fruitType = fruit;
+    public Box(Fruit fruit, String name){
+        if(fruit.fruitName.equals("fruit")) {
+            System.out.println("Коробка создана");
+            fruitType = name;
         }
         else {
             System.out.println("неизвестный фрукт");
@@ -21,11 +20,11 @@ public class Box {
 
     public void putFruit(String fruit, int count){
         if(fruit == fruitType){
-            if(fruitType.equals("apple")){
-                weightFruit = apple;
+            if(fruitType.equals(Apple.fruitName)){
+                weightFruit = Apple.weight;
             }
             else {
-                weightFruit = orange;
+                weightFruit = Orange.weight;
             }
             while (count > 0){
                 inBox.add(weightFruit);
