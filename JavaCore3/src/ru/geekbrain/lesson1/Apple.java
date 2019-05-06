@@ -8,4 +8,8 @@ public class Apple extends Fruit {
     public Apple(){
 
     }
+
+    public String getFruitName(){return fruitName;}
+
+    public float getFruitWeight(){return weight;}
 }

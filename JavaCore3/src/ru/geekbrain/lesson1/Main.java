@@ -2,38 +2,53 @@ package ru.geekbrain.lesson1;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class Main {
-    public static void main(String[] args) {
 
+    public static <T> T changeElement(T... array){
+        List<T> obj = Arrays.asList(array);
+        T first = obj.get(0);
+        obj.set(0, obj.get(obj.size()-1));
+        obj.set((obj.size()-1), first);
+        return (T) obj;
+    }
+
+    public static <T> ArrayList formatToArrayList(T... array){
+        ArrayList<T> obj = new ArrayList<>();
+        for(T elem: array){
+            obj.add(elem);
+        }
+        return obj;
+    }
+
+    public static void main(String[] args) {
 
         String[] str = {"a", "b", "c", "d", "e"};
 
-        ChangeElement<String> changeElement = new ChangeElement<>(str);
-
-        changeElement.change();
-
-        for(String s : str){
-            System.out.print(s + " ");
+        changeElement(str);
+        for(String elem : str){
+            System.out.print(elem + " ");
         }
-        System.out.println();
+        System.out.printf("%n%n");
 
-        FormatToArrayList<String> formatToArrayList = new FormatToArrayList<>();
-        ArrayList list = formatToArrayList.format(str);
+        ArrayList list = formatToArrayList(str);
         list.add("f");
-        for(Object s : list){
-            System.out.print(s + " ");
-        }
+        list.add("g");
+        System.out.println(list.toString());
+        list.remove("c");
+        System.out.println(list.toString());
 
         System.out.println();
 
-        String apple = "apple";
-        String orange = "orange";
+        Fruit apple = new Apple();
+        Fruit orange = new Orange();
 
-        Box appleBox1 = new Box(new Apple(), apple);
-        Box appleBox2 = new Box(new Apple(), apple);
+        Box appleBox1 = new Box(apple);
+        Box appleBox2 = new Box(apple);
 
-        Box orangeBox = new Box(new Orange(), orange);
+        Box orangeBox = new Box(orange);
 
         appleBox1.putFruit(orange, 3);
         appleBox1.putFruit(apple, 2);

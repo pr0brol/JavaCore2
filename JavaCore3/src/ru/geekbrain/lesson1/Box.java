@@ -2,34 +2,34 @@ package ru.geekbrain.lesson1;
 
 import java.util.ArrayList;
 
-public class Box {
+public class Box <T extends Fruit>{
 
+    private T obj;
     String fruitType;
     ArrayList inBox = new ArrayList();
     float weightFruit;
 
-    public Box(Fruit fruit, String name){
+    public Box(Fruit fruit){
         if(fruit.fruitName.equals("fruit")) {
             System.out.println("Коробка создана");
-            fruitType = name;
+            fruitType = fruit.getFruitName();
+            weightFruit = fruit.getFruitWeight();
+            obj = (T) fruit;
+
         }
         else {
             System.out.println("неизвестный фрукт");
         }
     }
 
-    public void putFruit(String fruit, int count){
-        if(fruit == fruitType){
-            if(fruitType.equals(Apple.fruitName)){
-                weightFruit = Apple.weight;
-            }
-            else {
-                weightFruit = Orange.weight;
-            }
+    public void putFruit(T newFruit, int count){
+        if(newFruit.getFruitName().equals(fruitType)){
+            System.out.printf("В коробку добавлено %s фрукта(ов) %s%n", count, newFruit.getFruitName());
             while (count > 0){
-                inBox.add(weightFruit);
+                inBox.add(newFruit);
                 count--;
             }
+
         }
         else {
             System.out.println("Коробка не подходит для данного фрукта");
@@ -51,8 +51,9 @@ public class Box {
 
     public void getAll(Box box){
         if(this.fruitType == box.fruitType){
-            box.putFruit(box.fruitType, this.inBox.size());
-            this.inBox.clear();
+
+            this.putFruit(obj, box.inBox.size());
+            box.inBox.clear();
         }else {
             System.out.println("В коробках разное содержимое");
         }

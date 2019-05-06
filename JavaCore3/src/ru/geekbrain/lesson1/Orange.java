@@ -8,4 +8,7 @@ public class Orange extends Fruit {
     public Orange(){
 
     }
+    public String getFruitName(){return fruitName;}
+
+    public float getFruitWeight(){return weight;}
 }

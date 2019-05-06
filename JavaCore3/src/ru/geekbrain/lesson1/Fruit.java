@@ -6,4 +6,8 @@ public class Fruit {
 
     public Fruit(){
     }
+
+    public String getFruitName(){return fruitName;}
+
+    public float getFruitWeight(){return weight;}
 }
