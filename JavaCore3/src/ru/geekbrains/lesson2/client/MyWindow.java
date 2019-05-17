@@ -1,14 +1,12 @@
 package ru.geekbrains.lesson2.client;
 
-import ru.geekbrains.lesson2.server.User;
-import ru.geekbrains.lesson2.server.persistance.UserRepository;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.Set;
 
 public class MyWindow extends JFrame implements MessageReciever{
 
@@ -34,6 +32,8 @@ public class MyWindow extends JFrame implements MessageReciever{
 
     private final Network network;
 
+    private final DocFile docFile;
+
     public MyWindow(){
         setTitle("Онлайн чат");
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -58,6 +58,8 @@ public class MyWindow extends JFrame implements MessageReciever{
 
         sendButton = new JButton("отправить");
         sendButton.setPreferredSize(new Dimension(100, 25));
+
+        docFile = new DocFile();
 
         sendButton.addActionListener(new ActionListener() {
             @Override
@@ -116,6 +118,8 @@ public class MyWindow extends JFrame implements MessageReciever{
             System.exit(0);
         }
 
+        this.network.requestConnectedUserList();
+
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -166,5 +170,19 @@ public class MyWindow extends JFrame implements MessageReciever{
             }
         });
     }
+
+    @Override
+    public void updateUserList(Set<String> users) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                userListModel.clear();
+                for(String usr: users){
+                    userListModel.addElement(usr);
+                }
+            }
+        });
+    }
+
 }
 

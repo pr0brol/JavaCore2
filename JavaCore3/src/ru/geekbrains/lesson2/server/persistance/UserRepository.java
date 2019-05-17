@@ -18,15 +18,8 @@ public class UserRepository {
         PreparedStatement preparedStatement = conn.prepareStatement("insert into users(login, password) values (?, ?)");
         this.preparedStatement = preparedStatement;
         usersDataBase = new ArrayList<>();
-        String sql = "create table users(id int auto_increment primary key, login varchar(25), password varchar(25));";
-
-        try{
-            if((preparedStatement.executeUpdate("show tables") != -1)){
-                preparedStatement.executeUpdate(sql);
-            }
-        }catch (SQLSyntaxErrorException e){
-            e.printStackTrace();
-        }
+        String sql = "create table if not exists users(id int auto_increment primary key, login varchar(25), password varchar(25));";
+        preparedStatement.executeUpdate(sql);
     }
 
     public void insert(User user) {

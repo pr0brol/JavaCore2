@@ -5,8 +5,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Collections;
-import java.util.List;
+import java.util.Set;
 
 import static ru.geekbrains.lesson2.client.MessagePatterns.*;
 
@@ -19,6 +18,7 @@ public class Network implements Closeable {
     private String hostName;
     private int port;
     private MessageReciever messageReciever;
+    public DocFile docFile;
 
     private String login;
 
@@ -36,30 +36,36 @@ public class Network implements Closeable {
                     try{
                         String text = inSteam.readUTF();
                         System.out.println("Новое сообщение " + text);
-                        String loginConn = parseConnectedMessage(text);
 
-                        TextMessage msg = parseTextMessage(text, loginConn);
+                        TextMessage msg = parseTextMessage(text, login);
+                        docFile = new DocFile();
+
+
                         if(msg != null) {
                             messageReciever.submitMessage(msg);
+                            docFile.writeText(msg);
                             continue;
                         }
 
-                        System.out.println("Новый пользователь " + text);
+                        String login = parseConnectedMessage(text);
 
-                        if(loginConn != null){
-                            messageReciever.userConnected(loginConn);
-                            continue;
-
-                        }
-                        String loginDisconn = parseDisconnectedMessage(text);
-                        if(loginDisconn != null){
-                            messageReciever.userDisconnected(loginDisconn);
+                        if(login != null){
+                            messageReciever.userConnected(login);
+                         //   docFile.readText(login);
                             continue;
                         }
-                        String req = parseRequestMessage(text);
-                        if(req != null){
-                            continue;                                   //не придумал
+
+                        login = parseDisconnectedMessage(text);
+                        if(login != null){
+                            messageReciever.userDisconnected(login);
+                            continue;
                         }
+
+                        Set<String> users = parseUserList(text);
+                        if(users != null){
+                            messageReciever.updateUserList(users);
+                        }
+
 
                     }catch (IOException ex){
                         ex.printStackTrace();
@@ -94,22 +100,23 @@ public class Network implements Closeable {
 
     public void sendTextMessage(TextMessage message){
         sendMessage(String.format(MESSAGE_SEND_PATTERN, message.getUserTo(), message.getText()));
+        docFile.writeText(message);
     }
 
     private void sendMessage(String msg){
         try{
             outStream.writeUTF(msg);
+            if(docFile != null) {
+                docFile.writeText(new TextMessage("test", "test2", msg + "1"));
+            }
             outStream.flush();
         }catch (IOException ex){
             ex.printStackTrace();
         }
     }
 
-    public List<String> requestConnectedUserList(){
-        sendMessage(REQUEST);
-        //todo добавить запрос пользователей с сервера
-        //пытаюсь реализовать, пока не знаю как
-        return Collections.emptyList();
+    public void requestConnectedUserList(){
+        sendMessage(USER_LIST_TAG);
     }
 
     public String getLogin(){
