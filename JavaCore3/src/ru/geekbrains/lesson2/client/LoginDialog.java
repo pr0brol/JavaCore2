@@ -75,16 +75,10 @@ public class LoginDialog extends JDialog {
                     return;
                 }catch (AuthException ex){
                     JOptionPane.showMessageDialog(LoginDialog.this,
-                            "Ошибка сети",
+                            "Пользователь не зарегистрирован",
                             "Авторизация",
                             JOptionPane.ERROR_MESSAGE);
                     return;
-                } catch (RegException ex) {
-                    JOptionPane.showMessageDialog(LoginDialog.this,
-                            "Вход выполнен",
-                            "Авторизация",
-                            JOptionPane.ERROR_MESSAGE);
-                    connected = true;
                 }
                 dispose();
             }
@@ -106,15 +100,14 @@ public class LoginDialog extends JDialog {
                     if((tfUsername.getText().equals("") || (String.valueOf(pfPassword.getPassword()).equals("")))){
                         throw new RegException();
                     }
-                    network.authorize(tfUsername.getText(), String.valueOf(pfPassword.getPassword()));
+                    network.registration(tfUsername.getText(), String.valueOf(pfPassword.getPassword()));
                     connected = true;
-                }catch (IOException ex){
                     JOptionPane.showMessageDialog(LoginDialog.this,
-                            "Ошибка сети",
-                            "Авторизация",
-                            JOptionPane.ERROR_MESSAGE);
+                            "Регистрация",
+                            "Пользователь успешно зарегистрировался",
+                            JOptionPane.INFORMATION_MESSAGE);
                     return;
-                }catch (AuthException ex){
+                }catch (IOException ex){
                     JOptionPane.showMessageDialog(LoginDialog.this,
                             "Ошибка сети",
                             "Авторизация",
@@ -127,7 +120,7 @@ public class LoginDialog extends JDialog {
                             JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-                dispose();
+     //           dispose();
             }
         });
         getContentPane().add(panel, BorderLayout.CENTER);

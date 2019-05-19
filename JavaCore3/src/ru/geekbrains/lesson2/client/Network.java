@@ -6,6 +6,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static ru.geekbrains.lesson2.client.MessagePatterns.*;
 
@@ -18,32 +20,27 @@ public class Network implements Closeable {
     private String hostName;
     private int port;
     private MessageReciever messageReciever;
-    public DocFile docFile;
+    private final ExecutorService executorService;
 
     private String login;
-
-    private Thread receiverThread;
 
     public Network(String hostName, int port, MessageReciever messageReciever){
         this.hostName = hostName;
         this.port = port;
         this.messageReciever = messageReciever;
+        this.executorService = Executors.newFixedThreadPool(10);
 
-        this.receiverThread = new Thread(new Runnable() {
+        executorService.execute(new Runnable() {
             @Override
             public void run() {
                 while (!Thread.currentThread().isInterrupted()){
                     try{
                         String text = inSteam.readUTF();
                         System.out.println("Новое сообщение " + text);
-
                         TextMessage msg = parseTextMessage(text, login);
-                        docFile = new DocFile();
-
 
                         if(msg != null) {
                             messageReciever.submitMessage(msg);
-                            docFile.writeText(msg);
                             continue;
                         }
 
@@ -51,7 +48,6 @@ public class Network implements Closeable {
 
                         if(login != null){
                             messageReciever.userConnected(login);
-                         //   docFile.readText(login);
                             continue;
                         }
 
@@ -66,7 +62,6 @@ public class Network implements Closeable {
                             messageReciever.updateUserList(users);
                         }
 
-
                     }catch (IOException ex){
                         ex.printStackTrace();
                         if(socket.isClosed()){
@@ -78,7 +73,7 @@ public class Network implements Closeable {
         });
     }
 
-    public void  authorize(String login, String password) throws IOException, AuthException, RegException{
+    public void  authorize(String login, String password) throws IOException, AuthException{
         socket = new Socket(hostName, port);
         outStream = new DataOutputStream(socket.getOutputStream());
         inSteam = new DataInputStream(socket.getInputStream());
@@ -87,28 +82,34 @@ public class Network implements Closeable {
         String response = inSteam.readUTF();
         if(response.equals(AUTH_SUCCESSFUL)){
             this.login = login;
-            receiverThread.start();
-        }
-        else if (response.equals(REGISTRATION)){
-            this.login = login;
-            receiverThread.start();
-
+           // this.thread.start();
         }else{
             throw new AuthException();
         }
     }
 
+    public void  registration(String login, String password) throws IOException, RegException{
+
+        socket = new Socket(hostName, port);
+        outStream = new DataOutputStream(socket.getOutputStream());
+        inSteam = new DataInputStream(socket.getInputStream());
+
+        sendMessage(String.format(REG_PATTERN, login, password));
+        String response = inSteam.readUTF();
+        if(response.equals(REGISTRATION_SUCCESSFUL)){
+            this.login = login;
+        }else{
+            throw new RegException();
+        }
+    }
+
     public void sendTextMessage(TextMessage message){
         sendMessage(String.format(MESSAGE_SEND_PATTERN, message.getUserTo(), message.getText()));
-        docFile.writeText(message);
     }
 
     private void sendMessage(String msg){
         try{
             outStream.writeUTF(msg);
-            if(docFile != null) {
-                docFile.writeText(new TextMessage("test", "test2", msg + "1"));
-            }
             outStream.flush();
         }catch (IOException ex){
             ex.printStackTrace();
@@ -125,7 +126,6 @@ public class Network implements Closeable {
 
     @Override
     public void close(){
-        this.receiverThread.interrupt();
         sendMessage(DISCONNECTED);
     }
 }

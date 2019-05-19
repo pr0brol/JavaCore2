@@ -20,6 +20,7 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class ChatServer extends JDialog{
 
@@ -61,20 +62,37 @@ public class ChatServer extends JDialog{
                 System.out.println("Новый пользователь присоединился!");
 
                 User user = null;
+                String authMessage = inStream.readUTF();
+
                 try {
-                    String authMessage = inStream.readUTF();
                     user = checkAuthentication(authMessage);
-                }catch (IOException ex){
-                    ex.printStackTrace();
+
                 }catch (AuthException ex){
-                    outStream.writeUTF(MessagePatterns.AUTH_FAIL);
-                    outStream.flush();
-                    socket.close();
+                    try{
+                        if(Registration(authMessage)){
+                            System.out.println(authMessage);
+                            outStream.writeUTF(MessagePatterns.REGISTRATION_SUCCESSFUL);
+                        }else {
+                            outStream.writeUTF(MessagePatterns.AUTH_FAIL);
+                            outStream.flush();
+                            // socket.close();
+                        }
+
+                    }catch (RegException e){
+                        outStream.writeUTF(MessagePatterns.REGISTRATION_FAIL);
+                        String[] parts = authMessage.split(" ");
+                        System.out.printf("Пользователь %s уже зарегистрирован%n", parts[1]);
+                        outStream.flush();
+                    }
                 }
                 if(user != null && authService.authUser(user)){
                     System.out.printf("Пользователь %s успешно авторизировался! %n", user.getLogin());
                     subscribe(user.getLogin(), socket);
                     outStream.writeUTF(MessagePatterns.AUTH_SUCCESSFUL);
+                    outStream.flush();
+                }else if(user != null && authService.regUser(user)){
+                    System.out.printf("Пользователь %s не зарегистророван! %n", user.getLogin());
+                    outStream.writeUTF(MessagePatterns.REGISTRATION_FAIL);
                     outStream.flush();
                 }else {
                     if(user != null){
@@ -96,19 +114,29 @@ public class ChatServer extends JDialog{
             throw new AuthException();
         }else if(authParts[1] == null || authParts[2] == null){
             throw new AuthException();
-
         }
         User user = new User(-1, authParts[1], authParts[2]);
-        userRepository.insert(user);
         return user;
     }
-// создать метод checkRegistration
+
+    private boolean Registration(String regMessage) throws RegException, SQLException {
+        String[] regParts = regMessage.split(" ");
+        User user = new User(-1, regParts[1], regParts[2]);
+        if(regParts.length != 3 || !regParts[0].equals("/reg")){
+            System.out.printf("Некорректная регистрация ", regMessage);
+            throw new RegException();
+        }else if(regParts[1] == null || regParts[2] == null || !authService.regUser(user)){
+            throw new RegException();
+        }
+        userRepository.insert(user);
+        return true;
+    }
+
     private void sendUserConnectedMessage(String login) throws IOException{
         for(ClientHandler clientHandler: clientHandlerMap.values()){
             if(!clientHandler.getLogin().equals(login)){
                 System.out.printf("Отправка уведомления от %s о %s%n", clientHandler.getLogin(), login);
                 clientHandler.sendConnectedMessage(login);
-
             }
         }
     }
@@ -118,15 +146,6 @@ public class ChatServer extends JDialog{
             if(!clientHandler.getLogin().equals(login)){
                 System.out.printf("Отправка уведомления от %s о %s%n", clientHandler.getLogin(), login);
                 clientHandler.sendDisconnectedMessage(login);
-            }
-        }
-    }
-
-    private void sendUserRequestMessage(String login) throws IOException{
-        for(ClientHandler clientHandler: clientHandlerMap.values()){
-            if(!clientHandler.getLogin().equals(login)){
-                System.out.println("Отправка уведомления о пользователях");
-                clientHandler.sendRequestMessage(login);
             }
         }
     }
@@ -145,8 +164,8 @@ public class ChatServer extends JDialog{
             do {
                 JOptionPane.showMessageDialog(this, "Повторный вход", "Ошибка", JOptionPane.ERROR_MESSAGE);
                 System.out.println("Повторная авторизация");
+
                 //todo проверить подключён ли пользователь, если да. то отправить ошибку (добавить всплывающее окно)
-                //обработал, не придумал как при закрытии уведомления оставить всё как есть - сейчас вход всё равно выполняется
             }while (clientHandlerMap.containsKey(login));
         }else {
             clientHandlerMap.put(login, new ClientHandler(login, socket, this));
@@ -171,10 +190,7 @@ public class ChatServer extends JDialog{
         sendUserDisconnectedMessage(login);
     }
 
-    public void sendUsersMessage(String login) throws IOException{
-        for(String key : clientHandlerMap.keySet()){
-            clientHandlerMap.get(key).sendMessage("Сервер", key);
-        }
-        sendUserRequestMessage(login);
+    public Set<String> getUserList(){
+        return Collections.unmodifiableSet(clientHandlerMap.keySet());
     }
 }

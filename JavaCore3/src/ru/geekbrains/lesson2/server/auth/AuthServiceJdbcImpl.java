@@ -1,6 +1,5 @@
 package ru.geekbrains.lesson2.server.auth;
 
-import ru.geekbrains.lesson2.client.RegException;
 import ru.geekbrains.lesson2.server.User;
 import ru.geekbrains.lesson2.server.persistance.UserRepository;
 
@@ -16,7 +15,7 @@ public class AuthServiceJdbcImpl implements AuthService {
     }
 
     @Override
-    public boolean authUser(User user) throws SQLException, RegException {
+    public boolean authUser(User user) throws SQLException {
 
         String sql = String.format("select *from users where login = '%s'", user.getLogin());
         ResultSet resultSet = userRepository.preparedStatement.executeQuery(sql);
@@ -29,4 +28,19 @@ public class AuthServiceJdbcImpl implements AuthService {
 
         return false;
     }
+
+    @Override
+    public boolean regUser(User user) throws SQLException {
+        String sql = String.format("select *from users where login = '%s'", user.getLogin());
+        ResultSet resultSet = userRepository.preparedStatement.executeQuery(sql);
+        String login = null;
+        if(resultSet.next()){
+            login = resultSet.getString(2);
+        }
+        if(user.getLogin().equals(login)){return false;}
+
+        return true;
+    }
+
+
 }

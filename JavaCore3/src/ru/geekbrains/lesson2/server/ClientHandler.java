@@ -6,6 +6,9 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static ru.geekbrains.lesson2.client.MessagePatterns.*;
 
@@ -15,8 +18,9 @@ public class ClientHandler {
     private final Socket socket;
     private final DataOutputStream outStream;
     private final DataInputStream inStream;
-    private final Thread handlerThread;
     private ChatServer chatServer;
+    private final ExecutorService executorService;
+
 
     public ClientHandler(String login, Socket socket, ChatServer chatServer) throws IOException{
         this.login = login;
@@ -25,7 +29,9 @@ public class ClientHandler {
         this.outStream = new DataOutputStream(socket.getOutputStream());
         this.chatServer = chatServer;
 
-        this.handlerThread = new Thread(new Runnable() {
+        this.executorService = Executors.newFixedThreadPool(10);
+
+        this.executorService.execute(new Runnable() {
             @Override
             public void run() {
                 while (!Thread.currentThread().isInterrupted()){
@@ -41,13 +47,10 @@ public class ClientHandler {
                             System.out.printf("Пользователь %s отключился%n", login);
                             chatServer.unsubscribe(login);
                             return;
-                        }else if(text.equals(REQUEST)){
-                            System.out.println("Запрос пользователей");
-                            chatServer.sendUsersMessage(login);
+                        }else if(text.equals(USER_LIST_TAG)){
+                            System.out.printf("Добавление пользователя %s в список%n", login);
+                            sendUserList(chatServer.getUserList());
 
-                        }else if (text.equals(CONNECTED)){
-                            System.out.printf("Пользователь %s подключился%n", login);
-                            chatServer.subscribe(login, socket);
                         }
                     }catch (IOException ex){
                         ex.printStackTrace();
@@ -57,7 +60,6 @@ public class ClientHandler {
             }
         });
         this.chatServer = chatServer;
-        this.handlerThread.start();
     }
 
     public String getLogin(){
@@ -82,16 +84,12 @@ public class ClientHandler {
         }
     }
 
-    public void sendRequestMessage(String login) throws IOException{
+
+    public void sendUserList(Set<String> users) throws IOException{
         if(socket.isConnected()){
-            outStream.writeUTF(String.format(REQUEST, login));
+            outStream.writeUTF(String.format(USER_LIST_RESPONSE, String.join(" ", users)));
         }
     }
 
-    public void sendRegistrationMessage(String login) throws IOException{
-        if(socket.isConnected()){
-            outStream.writeUTF(String.format(REGISTRATION, login));
-        }
-    }
 }
 

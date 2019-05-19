@@ -5,7 +5,7 @@ import java.time.format.DateTimeFormatter;
 
 public class TextMessage {
 
-    private String created;
+    public static String created;
 
     private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
 
@@ -13,7 +13,7 @@ public class TextMessage {
 
     public static String userTo;
 
-    private String text;
+    public static String text;
 
     public TextMessage(String userFrom, String userTo, String text){
         this.created = LocalDateTime.now().format(timeFormatter);

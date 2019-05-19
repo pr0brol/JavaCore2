@@ -6,7 +6,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.FileNotFoundException;
 import java.util.Set;
+import java.util.List;
 
 public class MyWindow extends JFrame implements MessageReciever{
 
@@ -32,7 +34,7 @@ public class MyWindow extends JFrame implements MessageReciever{
 
     private final Network network;
 
-    private final DocFile docFile;
+    private DocFile docFile;
 
     public MyWindow(){
         setTitle("Онлайн чат");
@@ -59,7 +61,6 @@ public class MyWindow extends JFrame implements MessageReciever{
         sendButton = new JButton("отправить");
         sendButton.setPreferredSize(new Dimension(100, 25));
 
-        docFile = new DocFile();
 
         sendButton.addActionListener(new ActionListener() {
             @Override
@@ -71,6 +72,7 @@ public class MyWindow extends JFrame implements MessageReciever{
                     messageListModel.add(messageListModel.size(), msg);
                     messageField.setText(null);
                     network.sendTextMessage(msg);
+                    docFile.writeText(msg);
                 }
             }
         });
@@ -83,8 +85,12 @@ public class MyWindow extends JFrame implements MessageReciever{
                 if(text != null && !text.trim().isEmpty()){
                     TextMessage msg = new TextMessage(network.getLogin(), userTo, text);
                     messageListModel.add(messageListModel.size(), msg);
+                    for(int i=0; i<messageListModel.size(); i++){
+                        System.out.println(messageListModel.get(i).getText());
+                    }
                     messageField.setText(null);
                     network.sendTextMessage(msg);
+                    docFile.writeText(msg);
                 }
             }
         };
@@ -120,11 +126,31 @@ public class MyWindow extends JFrame implements MessageReciever{
 
         this.network.requestConnectedUserList();
 
+        try {
+            this.docFile = new DocFile(network.getLogin());
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(MyWindow.this,
+                    "Ошибка",
+                    "Не запускается сервис истории сообщений",
+                    JOptionPane.ERROR_MESSAGE);
+            System.exit(0);
+        }
+
+        List<TextMessage> last = this.docFile.readText(5);
+        for (TextMessage msg: last){
+            messageListModel.add(messageListModel.size(), msg);
+        }
+
+
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
                 if(network != null){
                     network.close();
+                }
+                if(docFile != null){
+                    docFile.flush();
                 }
                 super.windowClosing(e);
             }
@@ -139,7 +165,9 @@ public class MyWindow extends JFrame implements MessageReciever{
             @Override
             public void run() {
                 messageListModel.add(messageListModel.size(), message);
-                messageList.ensureIndexIsVisible(messageListModel.size() - 1);
+                messageList.ensureIndexIsVisible(messageListModel.size());
+                docFile.writeText(message);
+                docFile.flush();
             }
         });
     }

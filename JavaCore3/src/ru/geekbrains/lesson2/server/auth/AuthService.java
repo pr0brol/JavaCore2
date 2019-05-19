@@ -6,5 +6,6 @@ import ru.geekbrains.lesson2.server.User;
 import java.sql.SQLException;
 
 public interface AuthService {
-    boolean authUser(User user) throws SQLException, RegException;
+    boolean authUser(User user) throws SQLException;
+    boolean regUser(User user) throws RegException, SQLException;
 }
