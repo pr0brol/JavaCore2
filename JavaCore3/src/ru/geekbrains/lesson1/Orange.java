@@ -1,4 +1,4 @@
-package ru.geekbrain.lesson1;
+package ru.geekbrains.lesson1;
 
 public class Orange extends Fruit {
 
