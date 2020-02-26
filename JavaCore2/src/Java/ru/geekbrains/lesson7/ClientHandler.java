@@ -7,7 +7,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-import static Java.ru.geekbrains.lesson4.MessagePatterns.MESSAGE_SEND_PATTERN;
+import static Java.ru.geekbrains.lesson4.MessagePatterns.*;
 
 
 public class ClientHandler {
@@ -33,13 +33,19 @@ public class ClientHandler {
                         String text = inStream.readUTF();
                         System.out.printf("Сообщение от пользователя %s: %s%n", login, text);
                         System.out.println("Новое сообщение " + text);
-                        String[] textMass = text.split(" ", 3);
-                        if(textMass.length == 3){
-                            TextMessage msg = new TextMessage(textMass[1], login, textMass[2]);
+                        TextMessage msg = parseTextMessage(text, login);
+                        if(msg != null){
                             msg.changeUsers();
                             chatServer.sendMessage(msg);
-                        }
+                        }else if(text.equals(DISCONNECTED)){
+                            System.out.printf("Пользователь %s отключился%n", login);
+                            chatServer.unsubscribe(login);
+                            return;
+                        }else if(text.equals(REQUEST)){
+                            System.out.println("Запрос пользователей");
+                            chatServer.sendUsersMessage(login);
 
+                        }
                     }catch (IOException ex){
                         ex.printStackTrace();
                         break;
@@ -56,7 +62,27 @@ public class ClientHandler {
     }
 
     public void sendMessage(String userFrom, String msg) throws IOException{
-        outStream.writeUTF(String.format(MESSAGE_SEND_PATTERN, userFrom, msg));
+        if(socket.isConnected()) {
+            outStream.writeUTF(String.format(MESSAGE_SEND_PATTERN, userFrom, msg));
+        }
+    }
+
+    public void sendConnectedMessage(String login)throws IOException{
+        if(socket.isConnected()){
+            outStream.writeUTF(String.format(CONNECTED_SEND, login));
+        }
+    }
+
+    public void sendDisconnectedMessage(String login) throws  IOException{
+        if(socket.isConnected()){
+            outStream.writeUTF(String.format(DISCONNECTED_SEND, login));
+        }
+    }
+
+    public void sendRequestMessage(String login) throws IOException{
+        if(socket.isConnected()){
+            outStream.writeUTF(String.format(REQUEST, login));
+        }
     }
 }
 

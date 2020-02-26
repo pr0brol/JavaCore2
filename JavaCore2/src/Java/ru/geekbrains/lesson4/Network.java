@@ -1,13 +1,16 @@
 package Java.ru.geekbrains.lesson4;
 
+import java.io.Closeable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Collections;
+import java.util.List;
 
 import static Java.ru.geekbrains.lesson4.MessagePatterns.*;
 
-public class Network {
+public class Network implements Closeable {
     public Socket socket;
     public DataInputStream inSteam;
     public DataOutputStream outStream;
@@ -28,14 +31,34 @@ public class Network {
         this.receiverThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                while (true){
+                while (!Thread.currentThread().isInterrupted()){
                     try{
                         String text = inSteam.readUTF();
-                        String[] textMass = text.split(" ", 3);
-                        if(textMass.length == 3 && textMass[0].equals("/w")){
-                            TextMessage textMessage = new TextMessage(textMass[1], login, textMass[2]);
-                            messageReciever.submitMessage(textMessage);
+                        System.out.println("Новое сообщение " + text);
+                        String loginConn = parseConnectedMessage(text);
+
+                        TextMessage msg = parseTextMessage(text, loginConn);
+                        if(msg != null) {
+                            messageReciever.submitMessage(msg);
+                            continue;
                         }
+
+                        System.out.println("Новый пользователь " + text);
+
+                        if(loginConn != null){
+                            messageReciever.userConnected(loginConn);
+                            continue;
+
+                        }
+                        String loginDisconn = parseDisconnectedMessage(text);
+                        if(loginDisconn != null){
+                            messageReciever.userDisconnected(loginDisconn);
+                            continue;
+                        }
+                        String req = parseRequestMessage(text);
+                            if(req != null){
+                                continue;                                   //не придумал
+                            }
 
                     }catch (IOException ex){
                         ex.printStackTrace();
@@ -76,7 +99,20 @@ public class Network {
         }
     }
 
+    public List<String> requestConnectedUserList(){
+        sendMessage(REQUEST);
+        //todo добавить запрос пользователей с сервера
+        //пытаюсь реализовать, пока не знаю как
+        return Collections.emptyList();
+    }
+
     public String getLogin(){
         return login;
+    }
+
+    @Override
+    public void close(){
+        this.receiverThread.interrupt();
+        sendMessage(DISCONNECTED);
     }
 }
