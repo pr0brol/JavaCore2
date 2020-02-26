@@ -14,7 +14,7 @@ public class EchoClient {
             Socket socket = new Socket("LocalHost", 7777)){
             DataInputStream in = new DataInputStream(socket.getInputStream());
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-
+            System.out.print("Введите сообщение > ");
             Thread InThread = new Thread() {
                 @Override
                 public void run() {
@@ -34,7 +34,7 @@ public class EchoClient {
                 public void run() {
                     try {
                         while (scanner.hasNextLine()) {
-                            System.out.println("Введите сообщение > ");
+                            System.out.print("Введите сообщение > ");
                             String line = scanner.nextLine();
                             out.writeUTF(line);
                         }
@@ -43,12 +43,15 @@ public class EchoClient {
                     }
                 }
             };
-
-            InThread.start();
             OutThread.start();
+            InThread.start();
+            InThread.join();
+
 
         }catch (IOException ex){
             ex.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 }
