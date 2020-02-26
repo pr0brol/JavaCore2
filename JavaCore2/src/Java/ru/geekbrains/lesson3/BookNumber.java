@@ -20,7 +20,8 @@ public class BookNumber {
     }
 
     public static void get(String name){
-        System.out.printf("Абонент %s найден с номером(-ами) " + phoneBook.get(name), name);
-        System.out.println();
+                System.out.printf("Абонент %s найден с номером(-ами) " + phoneBook.get(name), name);
+                System.out.println();
+
     }
 }
